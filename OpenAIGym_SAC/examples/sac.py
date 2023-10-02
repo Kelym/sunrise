@@ -10,6 +10,7 @@ from rlkit.torch.sac.sac import SACTrainer
 from rlkit.torch.networks import FlattenMlp
 from rlkit.torch.torch_rl_algorithm import TorchBatchRLAlgorithm
 
+from env_loader import get_env
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -29,17 +30,9 @@ def parse_args():
     args = parser.parse_args()
     return args
 
-
-def get_env(env_name, seed):
-
-    if env_name in ['gym_walker2d', 'gym_hopper', 'gym_cheetah', 'gym_ant']:
-        from mbbl.env.gym_env.walker import env
-    _env = env(env_name=env_name, rand_seed=seed, misc_info={'reset_type': 'gym'})
-    return _env
-
 def experiment(variant):
-    expl_env = NormalizedBoxEnv(get_env(variant['env'], variant['seed']))
-    eval_env = NormalizedBoxEnv(get_env(variant['env'], variant['seed']))
+    expl_env = NormalizedBoxEnv(get_env(variant))
+    eval_env = NormalizedBoxEnv(get_env(variant))
     
     obs_dim = expl_env.observation_space.low.size
     action_dim = eval_env.action_space.low.size
