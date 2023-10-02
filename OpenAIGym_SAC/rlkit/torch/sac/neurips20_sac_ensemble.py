@@ -251,6 +251,10 @@ class NeurIPS20SACEnsembleTrainer(TorchTrainer):
             """
             Update networks
             """
+            self.policy_optimizer[en_index].zero_grad()
+            policy_loss.backward()
+            self.policy_optimizer[en_index].step()
+
             self.qf1_optimizer[en_index].zero_grad()
             qf1_loss.backward()
             self.qf1_optimizer[en_index].step()
@@ -258,10 +262,6 @@ class NeurIPS20SACEnsembleTrainer(TorchTrainer):
             self.qf2_optimizer[en_index].zero_grad()
             qf2_loss.backward()
             self.qf2_optimizer[en_index].step()
-
-            self.policy_optimizer[en_index].zero_grad()
-            policy_loss.backward()
-            self.policy_optimizer[en_index].step()
 
             """
             Soft Updates
