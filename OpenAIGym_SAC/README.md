@@ -4,7 +4,7 @@ This codebase was originally forked from [rlkit](https://github.com/vitchyr/rlki
 
 ## install
 
-1. Install and use the included Ananconda environment
+1. ~Install and use the included Ananconda environment~ The yml file did not work so I skipped this step
 ```
 $ conda env create -f environment/linux-gpu-env.yml
 $ source activate rlkit
@@ -17,7 +17,7 @@ run:
 pip install -e .
 ```
 
-3. Install ["benchmarking MBRL"](https://arxiv.org/abs/1907.02057),
+3. Install ["benchmarking MBRL"](https://arxiv.org/abs/1907.02057), I skipped this step and used mujoco-py 2.3.0 as of 2023 Sep.
 ```
 pip uninstall gym
 pip install gym==0.9.4 mujoco-py==0.5.7 termcolor
