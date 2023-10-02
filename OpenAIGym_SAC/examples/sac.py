@@ -18,6 +18,7 @@ def parse_args():
     
     # train
     parser.add_argument('--batch_size', default=256, type=int)
+    parser.add_argument('--save_freq', default=0, type=int)
         
     # misc
     parser.add_argument('--seed', default=1, type=int)
@@ -33,8 +34,8 @@ def get_env(env_name, seed):
 
     if env_name in ['gym_walker2d', 'gym_hopper', 'gym_cheetah', 'gym_ant']:
         from mbbl.env.gym_env.walker import env
-    env = env(env_name=env_name, rand_seed=seed, misc_info={'reset_type': 'gym'})
-    return env
+    _env = env(env_name=env_name, rand_seed=seed, misc_info={'reset_type': 'gym'})
+    return _env
 
 def experiment(variant):
     expl_env = NormalizedBoxEnv(get_env(variant['env'], variant['seed']))
@@ -84,6 +85,7 @@ def experiment(variant):
     replay_buffer = EnvReplayBuffer(
         variant['replay_buffer_size'],
         expl_env,
+        log_dir=variant['log_dir'],
     )
     trainer = SACTrainer(
         env=eval_env,
@@ -92,6 +94,7 @@ def experiment(variant):
         qf2=qf2,
         target_qf1=target_qf1,
         target_qf2=target_qf2,
+        log_dir=variant['log_dir'],
         **variant['trainer_kwargs']
     )
     algorithm = TorchBatchRLAlgorithm(
@@ -123,6 +126,7 @@ if __name__ == "__main__":
             min_num_steps_before_training=1000,
             max_path_length=1000,
             batch_size=args.batch_size,
+            save_frequency=args.save_freq,
         ),
         trainer_kwargs=dict(
             discount=0.99,
@@ -141,6 +145,7 @@ if __name__ == "__main__":
     set_seed(args.seed)
     
     exp_name = 'SAC'
-    setup_logger_custom(exp_name, variant=variant)
+    log_dir = setup_logger_custom(exp_name, variant=variant)
+    variant['log_dir'] = log_dir
     ptu.set_gpu_mode(True)
     experiment(variant)

@@ -11,6 +11,7 @@ class EnvReplayBuffer(SimpleReplayBuffer):
             self,
             max_replay_buffer_size,
             env,
+            log_dir,
             env_info_sizes=None
     ):
         """
@@ -31,6 +32,7 @@ class EnvReplayBuffer(SimpleReplayBuffer):
             max_replay_buffer_size=max_replay_buffer_size,
             observation_dim=get_dim(self._ob_space),
             action_dim=get_dim(self._action_space),
+            log_dir=log_dir,
             env_info_sizes=env_info_sizes
         )
 

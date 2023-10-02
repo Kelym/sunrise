@@ -13,6 +13,7 @@ class SimpleReplayBuffer(ReplayBuffer):
         max_replay_buffer_size,
         observation_dim,
         action_dim,
+        log_dir,
         env_info_sizes,
     ):
         self._observation_dim = observation_dim
@@ -38,6 +39,10 @@ class SimpleReplayBuffer(ReplayBuffer):
 
         self._top = 0
         self._size = 0
+        self.buffer_dir = log_dir + '/buffer/'
+        from pathlib import Path
+        #creating a new directory called pythondirectory
+        Path(self.buffer_dir).mkdir(parents=True, exist_ok=True)
 
     def add_sample(self, observation, action, reward, next_observation,
                    terminal, env_info, **kwargs):
@@ -93,6 +98,29 @@ class SimpleReplayBuffer(ReplayBuffer):
             ('size', self._size)
         ])
 
+    def save_buffer(self, epoch):
+        path = self.buffer_dir + '/replay_%d.pt' % (epoch)
+        payload = [
+            self._observations[:self._size],
+            self._actions[:self._size],
+            self._rewards[:self._size],
+            self._terminals[:self._size],
+            self._next_obs[:self._size],
+            self._size,
+        ]
+        torch.save(payload, path)
+
+    def load_buffer(self, epoch):
+        path = self.buffer_dir + '/replay_%d.pt' % (epoch)
+        payload = torch.load(path)
+        self._observations = payload[0]
+        self._actions = payload[1]
+        self._rewards = payload[2]
+        self._terminals = payload[3]
+        self._next_obs = payload[4]
+        self._size = payload[5]
+
+
 class EnsembleSimpleReplayBuffer(EnsembleReplayBuffer):
 
     def __init__(
@@ -131,6 +159,9 @@ class EnsembleSimpleReplayBuffer(EnsembleReplayBuffer):
         self._top = 0
         self._size = 0
         self.buffer_dir = log_dir + '/buffer/'
+        from pathlib import Path
+        #creating a new directory called pythondirectory
+        Path(self.buffer_dir).mkdir(parents=True, exist_ok=True)
 
     def add_sample(self, observation, action, reward, next_observation,
                    terminal, mask, env_info, **kwargs):

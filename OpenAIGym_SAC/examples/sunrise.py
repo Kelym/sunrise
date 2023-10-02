@@ -191,7 +191,6 @@ if __name__ == "__main__":
     set_seed(args.seed)
     exp_name = 'SUNRISE'
     log_dir = setup_logger_custom(exp_name, variant=variant)
-            
     variant['log_dir'] = log_dir
     ptu.set_gpu_mode(True)
     experiment(variant)

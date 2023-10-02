@@ -19,6 +19,7 @@ class SACTrainer(TorchTrainer):
             qf2,
             target_qf1,
             target_qf2,
+            log_dir,
 
             discount=0.99,
             reward_scale=1.0,
@@ -44,6 +45,10 @@ class SACTrainer(TorchTrainer):
         self.target_qf2 = target_qf2
         self.soft_target_tau = soft_target_tau
         self.target_update_period = target_update_period
+        self.model_dir = log_dir + '/model/'
+        from pathlib import Path
+        #creating a new directory called pythondirectory
+        Path(self.model_dir).mkdir(parents=True, exist_ok=True)
 
         self.use_automatic_entropy_tuning = use_automatic_entropy_tuning
         if self.use_automatic_entropy_tuning:
@@ -225,3 +230,36 @@ class SACTrainer(TorchTrainer):
             target_qf2=self.qf2,
         )
 
+    def save_models(self, step):
+        torch.save(
+            self.policy.state_dict(), '%s/actor_%s.pt' % (self.model_dir, step)
+        )
+        torch.save(
+            self.qf1.state_dict(), '%s/1st_critic_%s.pt' % (self.model_dir, step)
+        )
+        torch.save(
+            self.qf2.state_dict(), '%s/2nd_critic_%s.pt' % (self.model_dir, step)
+        )
+        torch.save(
+            self.target_qf1.state_dict(), '%s/1st_target_critic_%s.pt' % (self.model_dir, step)
+        )
+        torch.save(
+            self.target_qf2.state_dict(), '%s/2nd_target_critic_%s.pt' % (self.model_dir, step)
+        )
+
+    def load_models(self, step):
+        self.policy.load_state_dict(
+            torch.load('%s/actor_%s.pt' % (self.model_dir, step))
+        )
+        self.qf1.load_state_dict(
+            torch.load('%s/1st_critic_%s.pt' % (self.model_dir, step))
+        )
+        self.qf2.load_state_dict(
+            torch.load('%s/2nd_critic_%s.pt' % (self.model_dir, step))
+        )
+        self.target_qf1.load_state_dict(
+            torch.load('%s/1st_target_critic_%s.pt' % (self.model_dir, step))
+        )
+        self.target_qf2.load_state_dict(
+            torch.load('%s/2nd_target_critic_%s.pt' % (self.model_dir, step))
+        )

@@ -20,7 +20,7 @@ class NeurIPS20SACEnsembleTrainer(TorchTrainer):
             target_qf1,
             target_qf2,
             num_ensemble,
-            feedback_type,
+            feedback_type, # default to 1 in codebase
             temperature,
             temperature_act,
             expl_gamma,
@@ -58,6 +58,9 @@ class NeurIPS20SACEnsembleTrainer(TorchTrainer):
         self.temperature_act = temperature_act
         self.expl_gamma = expl_gamma
         self.model_dir = log_dir + '/model/'
+        from pathlib import Path
+        #creating a new directory called pythondirectory
+        Path(self.model_dir).mkdir(parents=True, exist_ok=True)
         
         self.use_automatic_entropy_tuning = use_automatic_entropy_tuning
         
@@ -127,7 +130,7 @@ class NeurIPS20SACEnsembleTrainer(TorchTrainer):
                     var_Q = 0.5*((actor_Q1 - mean_actor_Q)**2 + (actor_Q2 - mean_actor_Q)**2)
                 std_Q_list.append(torch.sqrt(var_Q).detach())
                 
-        elif self.feedback_type == 1 or self.feedback_type == 3:
+        elif self.feedback_type == 1 or self.feedback_type == 3: # feedback_type=1 used in SUNRISE
             mean_Q, var_Q = None, None
             L_target_Q = []
             for en_index in range(self.num_ensemble):
@@ -136,10 +139,10 @@ class NeurIPS20SACEnsembleTrainer(TorchTrainer):
                         obs, reparameterize=True, return_log_prob=True,
                     )
                     
-                    if update_type == 0: # actor
+                    if update_type == 0: # called with Q_actor
                         target_Q1 = self.qf1[en_index](obs, policy_action)
                         target_Q2 = self.qf2[en_index](obs, policy_action)
-                    else: # critic
+                    else: # called with Q_critic
                         target_Q1 = self.target_qf1[en_index](obs, policy_action)
                         target_Q2 = self.target_qf2[en_index](obs, policy_action)
                     L_target_Q.append(target_Q1)
