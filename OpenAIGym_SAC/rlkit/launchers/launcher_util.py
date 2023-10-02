@@ -517,6 +517,8 @@ def set_seed(seed):
     seed = int(seed)
     random.seed(seed)
     np.random.seed(seed)
+    import torch;
+    torch.manual_seed(seed)
 
 
 def reset_execution_environment():
