@@ -104,26 +104,13 @@ class env(base_env_wrapper.base_env):
     def _build_env(self):
         import gym
         self._current_version = gym.__version__
-        if self._current_version in ['0.7.4', '0.9.4']:
-            _env_name = {
-                'gym_cheetah': 'HalfCheetah-v1',
-                'gym_walker2d': 'Walker2d-v1',
-                'gym_hopper': 'Hopper-v1',
-                'gym_swimmer': 'Swimmer-v1',
-                'gym_ant': 'Ant-v1',
-            }
-        elif self._current_version == NotImplementedError:
-            # TODO: other gym versions here
-            _env_name = {
-                'gym_cheetah': 'HalfCheetah-v2',
-                'gym_walker2d': 'Walker2d-v2',
-                'gym_hopper': 'Hopper-v2',
-                'gym_swimmer': 'Swimmer-v2',
-                'gym_ant': 'Ant-v2',
-            }
-
-        else:
-            raise ValueError("Invalid gym-{}".format(self._current_version))
+        _env_name = {
+            'gym_cheetah': 'HalfCheetah-v2',
+            'gym_walker2d': 'Walker2d-v2',
+            'gym_hopper': 'Hopper-v2',
+            'gym_swimmer': 'Swimmer-v2',
+            'gym_ant': 'Ant-v2',
+        }
 
         # make the environments
         self._env_info = env_register.get_env_info(self._env_name)
@@ -158,12 +145,17 @@ class env(base_env_wrapper.base_env):
             if self._current_version in ['0.7.4', '0.9.4']:
                 self._env.env.data.qpos = qpos.reshape([-1, 1])
                 self._env.env.data.qvel = qvel.reshape([-1, 1])
+                self._env.env.model._compute_subtree()  # pylint: disable=W0212
+                self._env.env.model.forward()
             else:
-                self._env.env.sim.data.qpos = qpos.reshape([-1])
-                self._env.env.sim.data.qvel = qpos.reshape([-1])
-
-            self._env.env.model._compute_subtree()  # pylint: disable=W0212
-            self._env.env.model.forward()
+                # For mujoco-py 2.3.0
+                _s = self._env.env.sim
+                sim_state = _s.get_state()
+                sim_state.qpos[:] = qpos.reshape([-1])
+                sim_state.qvel[:] = qvel.reshape([-1])
+                _s.set_state(sim_state)
+                _s.forward()
+            
             self._old_ob = self._get_observation()
 
         self.set_state = set_state
